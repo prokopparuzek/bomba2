@@ -1,0 +1,8 @@
+{
+    "output": "build",
+    "sketch": "konzole.ino",
+    "board": "arduino:avr:mega",
+    "port": "/dev/ttyACM0",
+    "programmer": "AVR ISP",
+    "configuration": "cpu=atmega2560"
+}
