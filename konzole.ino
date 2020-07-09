@@ -158,7 +158,7 @@ void printTime() {
   sec = remain % 60;
   sprintf(tempString, "%04d", sec + min * 100);
   sevseg.DisplayString(tempString, 2);
-  if (remain == 0) {
+  if (remain == 0 || remain > TIMER) {
     bum();
   }
 }
