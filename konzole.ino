@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <EEPROM.h>
 #include <SevSeg.h>
 
 #define RED 2
@@ -11,7 +12,7 @@
 
 #define POT A0
 
-#define TIMER 120 * 1000L
+#define TIMER 30 * 60 * 1000L
 
 // bomba
 byte simon[10] = {RED,   RED,   GREEN, YELLOW, YELLOW,
@@ -62,9 +63,12 @@ void setup() {
   // pot setup
   pinMode(POT, INPUT);
   // Serial setup
-  Serial.begin(9600);
+  // Serial.begin(9600);
+  // Tades
+  if (EEPROM.read(42)) bum();
   timerBomb = millis();
   BUM = millis() + TIMER;
+  EEPROM.write(42, 1);
 }
 
 void loop() {
@@ -92,6 +96,7 @@ void loop() {
       // defuse
       if (index == 10) {
         sevseg.DisplayString("SAUE", 0);
+        EEPROM.write(42, 0);
         while (1) sevseg.DisplayString("SAUE", 0);
       }
       for (int i = 0; i < index; i++) {
@@ -155,8 +160,13 @@ void printTime() {
   sprintf(tempString, "%04d", sec + min * 100);
   sevseg.DisplayString(tempString, 2);
   if (remain == 0) {
-    digitalWrite(WARN, HIGH);
-    sevseg.DisplayString("buch", -1);
-    while (true) sevseg.DisplayString("buch", -1);
+    bum();
   }
+}
+
+void bum() {
+  digitalWrite(WARN, HIGH);
+  sevseg.DisplayString("buch", -1);
+  EEPROM.write(42, 0);
+  while (true) sevseg.DisplayString("buch", -1);
 }
