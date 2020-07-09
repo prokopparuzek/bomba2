@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <SevSeg.h>
 
-#define RED 4
+#define RED 2
 #define YELLOW 3
-#define GREEN 2
+#define GREEN 4
 
 #define BUT 10
 
@@ -25,22 +25,32 @@ SevSeg sevseg;  // Instantiate a seven segment object
 
 void setup() {
   // display setup
-  byte numDigits = 4;
-  byte digitPins[] = {48, 49, 50, 51};
-  byte segmentPins[] = {32, 33, 34, 35, 36, 37, 38, 39};
-  bool resistorsOnSegments =
-      false;  // 'false' means resistors are on digit pins
-  byte hardwareConfig = COMMON_ANODE;  // See README.md for options
-  bool updateWithDelays = false;       // Default 'false' is Recommended
-  bool leadingZeros =
-      true;  // Use 'true' if you'd like to keep the leading zeros
-  bool disableDecPoint =
-      false;  // Use 'true' if your decimal point doesn't exist or isn't
-              // connected. Then, you only need to specify 7 segmentPins[]
+  int displayType =
+      COMMON_CATHODE;  // Your display is either common cathode or common anode
+                       // This pinout is for a bubble dispaly
+  // Declare what pins are connected to the GND pins (cathodes)
+  int digit1 = 48;  // Pin 1
+  int digit2 = 49;  // Pin 10
+  int digit3 = 50;  // Pin 4
+  int digit4 = 51;  // Pin 6
 
-  sevseg.begin(hardwareConfig, numDigits, digitPins, segmentPins,
-               resistorsOnSegments, updateWithDelays, leadingZeros,
-               disableDecPoint);
+  // Declare what pins are connected to the segments (anodes)
+  int segA = 32;   // Pin 12
+  int segB = 33;   // Pin 11
+  int segC = 34;   // Pin 3
+  int segD = 35;   // Pin 8
+  int segE = 36;   // Pin 2
+  int segF = 37;   // Pin 9
+  int segG = 38;   // Pin 7
+  int segDP = 39;  // Pin 5
+
+  int numberOfDigits = 4;  // Do you have a 1, 2 or 4 digit display?
+
+  sevseg.Begin(displayType, numberOfDigits, digit1, digit2, digit3, digit4,
+               segA, segB, segC, segD, segE, segF, segG, segDP);
+
+  sevseg.SetBrightness(100);  // Set the display to 100% brightness level
+
   // LED setup
   pinMode(RED, OUTPUT);
   pinMode(YELLOW, OUTPUT);
@@ -52,19 +62,18 @@ void setup() {
   // pot setup
   pinMode(POT, INPUT);
   // Serial setup
-  // Serial.begin(9600);
+  Serial.begin(9600);
   timerBomb = millis();
   BUM = millis() + TIMER;
-  sevseg.setNumber(1234);
 }
 
 void loop() {
-  sevseg.refreshDisplay();
   // remain time
   printTime();
   // change color
   int color = analogRead(POT);
-  color = map(color, 0, 1023, 9, 11);
+  color = 1023 - color;  // potak se toci obracene
+  color = map(color, 0, 1023, 2, 5);
   switch (color) {
     case GREEN:
       green();
@@ -82,8 +91,8 @@ void loop() {
       index++;
       // defuse
       if (index == 10) {
-        sevseg.setChars("SAVE");
-        while (1) sevseg.refreshDisplay();
+        sevseg.DisplayString("SAUE", 0);
+        while (1) sevseg.DisplayString("SAUE", 0);
       }
       for (int i = 0; i < index; i++) {
         switch (simon[i]) {
@@ -97,11 +106,10 @@ void loop() {
             red();
             break;
         }
-        delay(1000);
+        delay(800);
         printTime();
         off();
-        noTone(WARN);
-        delay(250);
+        delay(200);
         printTime();
       }
     } else {
@@ -138,15 +146,17 @@ void off() {
 }
 
 void printTime() {
+  char tempString[5];
   unsigned long remain = BUM - millis();
   int min, sec;
   remain /= 1000;
   min = remain / 60;
   sec = remain % 60;
-  sevseg.setNumber(sec + min * 100, 2);
+  sprintf(tempString, "%04d", sec + min * 100);
+  sevseg.DisplayString(tempString, 2);
   if (remain == 0) {
-    sevseg.setChars("BUM");
     digitalWrite(WARN, HIGH);
-    while (true) sevseg.refreshDisplay();
+    sevseg.DisplayString("buch", -1);
+    while (true) sevseg.DisplayString("buch", -1);
   }
 }
