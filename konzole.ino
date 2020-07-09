@@ -72,8 +72,8 @@ void loop() {
   printTime();
   // change color
   int color = analogRead(POT);
-  color = 1023 - color;  // potak se toci obracene
-  color = map(color, 0, 1023, 2, 5);
+  // color = 1023 - color;  // potak se toci obracene
+  color = map(color, 0, 1023, 2, 4);
   switch (color) {
     case GREEN:
       green();
