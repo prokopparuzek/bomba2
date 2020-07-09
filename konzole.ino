@@ -18,7 +18,6 @@
 byte simon[10] = {RED,   RED,   GREEN, YELLOW, YELLOW,
                   GREEN, GREEN, RED,   GREEN,  RED};
 byte index = 0;
-unsigned long int timerBomb = 0;
 unsigned long int BUM;
 
 // display init
@@ -66,7 +65,6 @@ void setup() {
   // Serial.begin(9600);
   // Tades
   if (EEPROM.read(42)) bum();
-  timerBomb = millis();
   BUM = millis() + TIMER;
   EEPROM.write(42, 1);
 }
@@ -120,6 +118,7 @@ void loop() {
     } else {
       digitalWrite(WARN, HIGH);
       index = 0;
+      BUM -= 90000L;
       delay(1000);
       digitalWrite(WARN, LOW);
     }
